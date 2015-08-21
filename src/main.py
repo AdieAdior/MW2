@@ -24,7 +24,7 @@ print()
 def main():
 	global offset
 	for each in range(0,10):
-		result = re.search(b'.+?\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00......................',data[offset:] , re.DOTALL)
+		result = re.search(b'.+?\x00{24}......................',data[offset:] , re.DOTALL)
 		a = result.group()
 		length = len(a)
 		nameLength = length - 75
@@ -34,7 +34,7 @@ def main():
 			print(unpackedPacket)
 			offset = offset + length
 		else:
-			result = re.search(b'.+?\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.....................', data[offset:], re.DOTALL)
+			result = re.search(b'.+?\x00{24}.....................', data[offset:], re.DOTALL)
 			a = result.group()
 			length = len(a)
 			nameLength = length - 74
