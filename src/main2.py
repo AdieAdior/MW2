@@ -9,6 +9,7 @@ import ipaddress
 import binascii
 import geoip2.database
 import time
+import subprocess
 
 reader = geoip2.database.Reader("GeoLite2-City.mmdb")
 
@@ -53,6 +54,22 @@ def colourReplace(string):
 	else:
 		return string
 
+def colourReplace(string):
+	newstring = string.replace("^1", "\033[1;31m")#red
+	newstring = newstring.replace("^2", "\033[1;32m")#green
+	newstring = newstring.replace("^3", "\033[1;33m")#yellow
+	newstring = newstring.replace("^4", "\033[1;34m")#blue
+	newstring = newstring.replace("^5", "\033[1;36m")#cyan
+	newstring = newstring.replace("^6", "\033[1;35m")#pink
+	newstring = newstring.replace("^7", "\033[1;37m")#white
+	newstring = newstring.replace("^8", "\033[1;m")#black
+	newstring = newstring.replace("^9", "\033[1;30m")#grey
+	newstring = newstring.replace("^0", "\033[1;m")#black
+	if string != newstring:
+		return newstring + "\033[1;m"
+	else:
+		return string
+
 vac = {}
 
 def vacCheck(steamID, ip):
@@ -69,9 +86,9 @@ def vacCheck(steamID, ip):
 			vac[steamID]["time"] = time.time()
 			return "False"
 		else:
-			vac[steamID]["data"] = "\033[1;31m%d VAC ban(s) %d days ago\033[1;m"%(obj["players"][0]["NumberOfVACBans"],obj["players"][0]["DaysSinceLastBan"])
+			vac[steamID]["data"] = "%d VAC ban(s) %d days ago"%(obj["players"][0]["NumberOfVACBans"],obj["players"][0]["DaysSinceLastBan"])
 			vac[steamID]["time"] = time.time()
-			subprocess.check_output(["easyrule", "block WAN %s"%ip], 1)
+			print(subprocess.check_output(["easyrule block WAN %s"%ip], shell=True))
 			print("\033[1;31m%s BANNED - VAC\033[1;m"%ip)
 			return "%d VAC ban(s) %d days ago"%(obj["players"][0]["NumberOfVACBans"],obj["players"][0]["DaysSinceLastBan"])
 	else:
@@ -114,25 +131,28 @@ def customAction(data1):
 		if re.search(b"0partystate", data) is not None:
 			table = [["ID", "Name", "External IP", "Internal IP", "Steam ID", "Points", "Deaths", "Rank", "Presteige", "VAC", "Hours played", "Location"],]
 			while offset + 80 < len(data):
-				result = re.search(b'.+?\x00{24}......................',data[offset:] , re.DOTALL)
+				result = re.search(b'.+?\x00{24}.{22}',data[offset:] , re.DOTALL)
 				a = result.group()
 				length = len(a)
 				nameLength = length - 75
 				unpackedPacket = struct.unpack('<b3s%ds5xqIIhh24xIIxhbbbq'%nameLength, a)
 				if sanityCheck(unpackedPacket):
 					user = userLookup(str(dec2ip(unpackedPacket[5])))
-					table.append([unpackedPacket[0], unpackedPacket[2], "%s:%d"%(dec2ip(unpackedPacket[5]),unpackedPacket[7]), "%s:%d"%(dec2ip(unpackedPacket[4]),unpackedPacket[6]), unpackedPacket[3], unpackedPacket[10], unpackedPacket[11], unpackedPacket[12], unpackedPacket[13], vacCheck(unpackedPacket[3],dec2ip(unpackedPacket[5])), gameCheck(unpackedPacket[3]), "%s, %s, %s" % (user.city, user.region, user.country)])
+					table.append([unpackedPacket[0], unpackedPacket[2], dec2ip(unpackedPacket[5]), dec2ip(unpackedPacket[4]), unpackedPacket[3], unpackedPacket[10], unpackedPacket[11], unpackedPacket[12]+1, unpackedPacket[13], vacCheck(unpackedPacket[3],dec2ip(unpackedPacket[5])), gameCheck(unpackedPacket[3]), "%s, %s, %s" % (user.city, user.region, user.country)])
 					offset = offset + length
 				else:
-					result = re.search(b'.+?\x00{24}.....................', data[offset:], re.DOTALL)
+					result = re.search(b'.+?\x00{24}.{21}', data[offset:], re.DOTALL)
 					a = result.group()
 					length = len(a)
 					nameLength = length - 74
 					unpackedPacket = struct.unpack('<b3s%ds5xqIIhh24xIIhbbbq'%nameLength, a)
 					if sanityCheck(unpackedPacket):
 						user = userLookup(str(dec2ip(unpackedPacket[5])))
-						table.append([unpackedPacket[0], unpackedPacket[2], "%s:%d"%(dec2ip(unpackedPacket[5]),unpackedPacket[7]), "%s:%d"%(dec2ip(unpackedPacket[4]),unpackedPacket[6]), unpackedPacket[3], unpackedPacket[10], unpackedPacket[11], unpackedPacket[12], unpackedPacket[13], vacCheck(unpackedPacket[3],dec2ip(unpackedPacket[5])), gameCheck(unpackedPacket[3]), "%s, %s, %s" % (user.city, user.region, user.country)])
+						table.append([unpackedPacket[0], unpackedPacket[2], dec2ip(unpackedPacket[5]), dec2ip(unpackedPacket[4]), unpackedPacket[3], unpackedPacket[10], unpackedPacket[11], unpackedPacket[12]+1, unpackedPacket[13], vacCheck(unpackedPacket[3],dec2ip(unpackedPacket[5])), gameCheck(unpackedPacket[3]), "%s, %s, %s" % (user.city, user.region, user.country)])
 						offset = offset + length
+			for each1 in table:
+				for each2 in each1:
+					each = colourReplace(each)
 			print(tabulate(table))
 			#print(tabulate(table, headers="firstrow"))
 	except Exception as e:
