@@ -15,6 +15,8 @@ import inspect
 import platform
 import gc
 import sys
+import string
+
 
 reader = geoip2.database.Reader("GeoLite2-City.mmdb")
 
@@ -35,7 +37,13 @@ clear = "\n" * 100
 def lineno():
 		"""Returns the current line number in our program."""
 		return inspect.currentframe().f_back.f_lineno
-data1 = b'002438633041000eb629dda50800450000f4356000007f11f414a78e2b3f457bf93b7120712000e052b0ffffffff30706172747973746174650064604000840200000000000000002e0000000600000000000000000c0001ca9b33bd196fbe339bc0a80164a78e2b3f20712071000000000000000000000000000000000000000000000000000000000000000000000000000000004d62f7520000860100ffffffffffffff0a0000020000000001030000436f6d726164654563686f0000000000cefe8d0401001001c0a80164a78e2b3f20712071000000000000000000000000000000000000000000000000ff0889d82a8a08ff0a0000004509d0000000f20700'
+
+data1 = b'000eb629dda50024386330410800452803ad0d8200007611a40f188ca42da78e2b3f712071200399489bffffffff30706172747973746174650067a12a00040900000000000000002e000000a0b52d0000000000000c000444da4dddaec6dd4ddac0a80111188ca42d2071207100000000000000000000000000000000000000000000000000000000000000000000000000000000bedc085300008601080b080209040d0500070f02000000003f038046627c7c476c656e6e3231350000000000b8626a0b010010010a00000a49bdb76720712071000000000000000000000000000000000000000000000000c8e128859f28e1c800000145021a0000002478020001b1cf8072696c6579636872697300000000003f2aa10b01001001c0a802108e4451ef20712071000000000000000000000000000000000000000000000000cb003bc50d4100cb102602060e01600000000b00004002dc3340426c61636b73686565702c2057622e0000000000609fd30001001001c0a80154326ea4b320712071000000000000000000000000000000000000000000000000e07ee68f95e67ee024000000450a83000000088a001003ef0c185e3941706f6c6c6f2773205e31353063616c0000000000761ed10d01001001c0a8019c47c72b15207120710000000000000000000000000000000000000000000000008805f4fb2ef405889d960003450102000000a40900e4043f03885be299a3444953e299a35d4c41205375726665720000000000fc323b0601001001c0a80111188ca42d2071207100000000000000000000000000000000000000000000000014af948ea694af14d60105450058000000850c030005d1cb80436f6d726164654563686f0000000000cefe8d0401001001c0a80164a78e2b3f207120710000000000000000000000000000000000000000000000009d761e3cb91f769d628a02034509b900000041fe004006fc11404d7973744f66446561746800000000002a52520101001001c0a8017562f9268720712071000000000000000000000000000000000000000000000000e07ee68f95e67ee0540000004501fdffffff0656001009ff0030746f6861313937380000000000c89c350401001001c0a801665bc7230120712071000000000000000000000000000000000000000000000000585e613b3d615e5802aa00063907bdffffff000000cc0a1f004e5e314b616e6500000000000d77b90b010010010a46f0218189a5fb20719e7400000000000000000000000000000000000000000000000009f087e11d87f009c80003450a3f000000bd780800'
+
+
+
+
+
 
 
 data1 = data1.replace(b" ", b"")
@@ -107,21 +115,21 @@ def gameCheck(steamID):
 	else:
 		return hours.get(steamID).get("data")
 
-def removecolour(string):
+def removecolour(value):
 	if "Windows" in platform.platform():
-		string = string.replace("^1", "")
-		string = string.replace("^2", "")
-		string = string.replace("^3", "")
-		string = string.replace("^4", "")
-		string = string.replace("^5", "")
-		string = string.replace("^6", "")
-		string = string.replace("^7", "")
-		string = string.replace("^8", "")
-		string = string.replace("^9", "")
-		string = string.replace("^0", "")
-		return string
+		value = value.replace("^1", "")
+		value = value.replace("^2", "")
+		value = value.replace("^3", "")
+		value = value.replace("^4", "")
+		value = value.replace("^5", "")
+		value = value.replace("^6", "")
+		value = value.replace("^7", "")
+		value = value.replace("^8", "")
+		value = value.replace("^9", "")
+		value = value.replace("^0", "")
+		return ''.join(filter(lambda x:x in string.printable, value))
 	else:
-		newstring = string.replace("^1",    "\x1b[1;31m")#red
+		newstring = value.replace("^1",    "\x1b[1;31m")#red
 		newstring = newstring.replace("^2", "\x1b[1;32m")#green
 		newstring = newstring.replace("^3", "\x1b[1;33m")#yellow
 		newstring = newstring.replace("^4", "\x1b[1;34m")#blue
@@ -131,37 +139,32 @@ def removecolour(string):
 		newstring = newstring.replace("^8", "\x1b[1;m")#black
 		newstring = newstring.replace("^9", "\x1b[1;30m")#grey
 		newstring = newstring.replace("^0", "\x1b[1;m")#black
-		if string != newstring:
+		if value != newstring:
 			return newstring + "\x1b[1;m"
 		else:
-			return string
+			return ''.join(filter(lambda x:x in string.printable, value))
+f = open('bytes.log', 'w')
+f.write("")
+f.close()
+
+global packetID
+packetID = 0
 
 def buff(data):
-	try:
-		main(data)
-	except:
-		pass
-
-def main(data):
-	# if data[IP].src != "167.142.43.63":
+	global packetID
 	copydata = data
 	if 1 == 1:
-		table = [["ID", "Name", "External IP", "Internal IP", "Steam ID", "P", "D", "R", "Pr", "VAC", "Hours", "Location"]]
+		table = [["ID", "Name", "External IP", "Internal IP", "Steam ID", "Hours", "Location"]]
 		if "Windows" in platform.platform():
 			data = codecs.decode(data, "hex")
 		else:
 			data = bytes(data)
-		try:
-			f.close()
-		except:
-			pass
-		f = open('bytes.log', 'wb')
-		f.write(data)
 		data = data[42:]
 		offset = 130
-		if re.search(b"partystate", data) is not None:
-			print("partystate")
-			while offset + 83 < len(data):
+		if re.search(b"0partystate", data) is not None:
+			# print(lineno())
+			while offset  < len(data):
+				# print(lineno())
 				result = re.search(b'.+?\x00{24}.{21}',data[offset:] , re.DOTALL)
 				if result is not None:
 					a = result.group()
@@ -170,19 +173,19 @@ def main(data):
 					if sanityCheck(unpackedPacket):
 						user = userLookup(str(dec2ip(unpackedPacket[5])))
 						table.append([
-							unpackedPacket[0],
-							removecolour(unpackedPacket[2].decode("ascii", "ignore")),
-							dec2ip(unpackedPacket[5]),
-							dec2ip(unpackedPacket[4]),
-							unpackedPacket[3],
-							unpackedPacket[10],
-							unpackedPacket[11],
-							unpackedPacket[12]+1,
-							unpackedPacket[13],
-							vacCheck(unpackedPacket[3],
-							dec2ip(unpackedPacket[5])),
-							gameCheck(unpackedPacket[3]),
-							"%s, %s, %s" % (user.country, user.region, user.city)])
+									  unpackedPacket[0],
+									  removecolour(unpackedPacket[2].decode("ascii", "ignore")),
+									  dec2ip(unpackedPacket[5]),
+									  dec2ip(unpackedPacket[4]),
+									  unpackedPacket[3],
+									  # unpackedPacket[10],
+									  # unpackedPacket[11],
+									  # unpackedPacket[12]+1,
+									  # unpackedPacket[13],
+									  vacCheck(unpackedPacket[3],
+									  dec2ip(unpackedPacket[5])),
+									  gameCheck(unpackedPacket[3]),
+									  "%s, %s, %s" % (user.country, user.region, user.city)])
 						offset = offset + len(a)
 					else: 
 						result = re.search(b'.+?\x00{24}.{22}', data[offset:], re.DOTALL)
@@ -193,36 +196,45 @@ def main(data):
 							if sanityCheck(unpackedPacket):
 								user = userLookup(str(dec2ip(unpackedPacket[5])))
 								table.append([
-									unpackedPacket[0],
-									removecolour(unpackedPacket[2].decode("ascii", "ignore")),
-									dec2ip(unpackedPacket[5]),
-									dec2ip(unpackedPacket[4]),
-									unpackedPacket[3],
-									unpackedPacket[10],
-									unpackedPacket[11],
-									unpackedPacket[12]+1,
-									unpackedPacket[13],
-									vacCheck(unpackedPacket[3],
-									dec2ip(unpackedPacket[5])),
-									gameCheck(unpackedPacket[3]),
-									"%s, %s, %s" % (user.country, user.region, user.city)])
+											  unpackedPacket[0],
+											  removecolour(unpackedPacket[2].decode("ascii", "ignore")),
+											  dec2ip(unpackedPacket[5]),
+											  dec2ip(unpackedPacket[4]),
+											  unpackedPacket[3],
+											  # unpackedPacket[10],
+											  # unpackedPacket[11],
+											  # unpackedPacket[12]+1,
+											  # unpackedPacket[13],
+											  vacCheck(unpackedPacket[3],
+											  dec2ip(unpackedPacket[5])),
+											  gameCheck(unpackedPacket[3]),
+											  "%s, %s, %s" % (user.country, user.region, user.city)])
 								offset = offset + len(a)
 							else:
+								# print(lineno())
 								offset = offset + 1
 						else:
+							# print(lineno())
 							offset = offset + 1
 				else:
+					# print(lineno())
 					offset = offset + 1
 			for x in table:
 				for y in x:
 					y = str(y).encode("ASCII", "ignore")
 			if len(table) > 3:
-				if "Windows" not in platform.platform():
-					print(copydata[IP].src)
-				print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
+				with codecs.open("bytes.log", "a", encoding="utf-8") as f:
+					f.write(("ID = %d\n"%packetID))
+					print("ID = %d"%packetID)
+					f.write(str(codecs.encode(bytes(copydata), "hex")))
+					f.write("\n")
+					f.write(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
+					print(tabulate(table, headers="firstrow", tablefmt="fancy_grid"))
+					f.write("---------------------------------\n")
+				packetID += 1
 
 if "Windows" in platform.platform():
-	main(data1)
+	buff(data1)
 else: 
 	from scapy.all import *
 	import resource
